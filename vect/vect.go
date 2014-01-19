@@ -7,8 +7,8 @@ import (
 // Origin is a zero value for V.
 var Origin = V{0, 0}
 
-// FClamp returns val clamped between min and max.
-func FClamp(val, min, max float64) float64 {
+// Clampf returns val clamped between min and max.
+func Clampf(val, min, max float64) float64 {
 	if val < min {
 		return min
 	} else if val > max {
@@ -216,6 +216,41 @@ func Normalize(v V) V {
 	return Mult(v, f)
 }
 
+// Slerp does spherical linear interpolation between vectors a and b.
+func Slerp(a, b V, t float64) V {
+	dot := Dot(Normalize(a), Normalize(b))
+	omega := Clampf(dot, -1, 1)
+	return Add(
+		Mult(a, math.Sin((1-t)*omega)/math.Sin(omega)),
+		Mult(b, math.Sin(t*omega)/math.Sin(omega)))
+}
+
+// SlerpConst does spherical linear interpolation between a towards b by no more
+// than th radians.
+func SlerpConst(a, b V, th float64) V {
+	dot := Dot(Normalize(a), Normalize(b))
+	omega := math.Acos(Clampf(dot, -1, 1))
+	return Slerp(a, b, math.Min(th, omega)/omega)
+}
+
+// Clamp returns v clamped to length ln.
+func (v V) Clamp(ln float64) V {
+	return Clamp(v, ln)
+}
+
+// Clamp returns v clamped to length ln.
+func Clamp(v V, ln float64) V {
+	if Dot(v, v) > ln*ln {
+		return Mult(Normalize(v), ln)
+	}
+	return v
+}
+
+// LerpConst interpolates between a towards b by distance d.
+func LerpConst(a, b V, d float64) V {
+	return Add(a, Clamp(Sub(b, a), d))
+}
+
 // DistanceSquared returns the distance from a for v, squared.
 func (v V) DistanceSquared(a V) float64 {
 	return DistanceSquared(v, a)
@@ -236,17 +271,9 @@ func Distance(a, b V) float64 {
 	return math.Sqrt(DistanceSquared(a, b))
 }
 
-// Clamp returns v clamped to length ln.
-func (v V) Clamp(ln float64) V {
-	return Clamp(v, ln)
-}
-
-// Clamp returns v clamped to length ln.
-func Clamp(v V, ln float64) V {
-	if Dot(v, v) > ln*ln {
-		return Mult(Normalize(v), ln)
-	}
-	return v
+// Near returns true if the distance between a and b is less than dist.
+func Near(a, b V, dist float64) bool {
+	return DistanceSquared(a, b) < dist*dist
 }
 
 // Min returns a vector with minimal X and Y from two vectors.
