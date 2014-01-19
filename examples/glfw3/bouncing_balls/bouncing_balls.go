@@ -127,8 +127,8 @@ func onResize(window *glfw.Window, w, h int) {
 
 func main() {
 	// initialize glfw
-	if !glfw.Init() {
-		panic("Failed to initialize GLFW")
+	if err := glfw.Init(); err != nil {
+		panic("Failed to initialize GLFW: "+err.Error())
 	}
 	defer glfw.Terminate()
 
