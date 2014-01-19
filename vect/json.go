@@ -2,28 +2,26 @@ package vect
 
 import (
 	"encoding/json"
-	"log"
 )
 
-func (v Vect) MarshalJSON() ([]byte, error) {
-	return json.Marshal(&[2]Float{v.X, v.Y})
+func (v V) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&[2]float64{v.X, v.Y})
 }
 
-func (v *Vect) UnmarshalJSON(data []byte) error {
-	vectData := [2]Float{}
+func (v *V) UnmarshalJSON(data []byte) error {
+	vectData := [2]float64{}
 
 	//try unmarshalling array form
 	err := json.Unmarshal(data, &vectData)
 	if err != nil {
 		//try other form
 		vectData := struct {
-			X, Y Float
+			X, Y float64
 		}{}
 
 		err := json.Unmarshal(data, &vectData)
 
 		if err != nil {
-			log.Printf("Error decoding Vect")
 			return err
 		}
 		v.X = vectData.X
